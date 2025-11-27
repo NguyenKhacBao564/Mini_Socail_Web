@@ -1,0 +1,21 @@
+{
+  "name": "comment-service",
+  "version": "1.0.0",
+  "description": "Comment Service for OmniSocial",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sequelize": "^6.29.3",
+    "pg": "^8.10.0",
+    "pg-hstore": "^2.3.4",
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.21"
+  }
+}
