@@ -100,5 +100,24 @@ services:
       - ./frontend:/app
       - /app/node_modules
 
+  # 6. Notification Service
+  notification-service:
+    build: ./backend/notification-service
+    container_name: social_notification_service
+    environment:
+      - PORT=3005
+      - DB_HOST=postgres
+      - DB_USER=admin
+      - DB_PASS=password123
+      - DB_NAME=social_db
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+
 volumes:
   pgdata:

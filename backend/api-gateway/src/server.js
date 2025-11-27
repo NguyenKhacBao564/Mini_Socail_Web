@@ -35,6 +35,7 @@ const protectedRoutes = {
   '/api/posts': 'http://post-service:3002',
   '/api/comments': 'http://comment-service:3003',
   '/api/feed':  'http://feed-service:3004',
+  '/api/notifications': 'http://notification-service:3005', // New Route
 };
 
 for (const [path, target] of Object.entries(protectedRoutes)) {

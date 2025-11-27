@@ -41,7 +41,9 @@ app.use('/user-assets', express.static(uploadDir));
 const router = express.Router();
 router.post('/register', userController.register);
 router.post('/login', userController.login);
+router.get('/search', userController.search);
 router.get('/following-ids', userController.getFollowingIds);
+router.get('/batch', userController.getUsersByIds); // Batch fetch route
 router.put('/profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), userController.updateProfile);
 router.get('/:id', userController.getProfile);
 router.post('/:id/follow', userController.followUser);

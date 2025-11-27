@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axiosClient from '../../api/axiosClient';
 
 const UserSuggestion = ({ name, handle, color }) => (
   <div className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl cursor-pointer transition-colors">
@@ -14,14 +16,75 @@ const UserSuggestion = ({ name, handle, color }) => (
 );
 
 const RightPanel = () => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (query.trim()) {
+        setIsSearching(true);
+        try {
+          const res = await axiosClient.get(`/users/search?q=${query}`);
+          setResults(res.data.data);
+        } catch (error) {
+          console.error("Search failed", error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [query]);
+
   return (
     <div className="h-screen sticky top-0 py-6 px-4 hidden lg:flex flex-col gap-6 border-l border-white/5">
       {/* Search */}
-      <div className="relative">
+      <div className="relative z-50">
         <input 
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Search OmniSocial" 
           className="w-full bg-slate-900 border border-slate-800 rounded-full py-3 px-6 text-sm text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-500" 
         />
+        
+        {/* Search Results Dropdown */}
+        {(results.length > 0 || isSearching) && (
+          <div className="absolute top-full mt-2 w-full bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-96 overflow-y-auto">
+            {isSearching ? (
+              <div className="p-4 text-center text-slate-500 text-sm">Searching...</div>
+            ) : (
+              results.map(user => (
+                <Link 
+                  key={user.id} 
+                  to={`/profile/${user.id}`}
+                  className="flex items-center gap-3 p-3 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                  onClick={() => {
+                    setQuery('');
+                    setResults([]);
+                  }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0 overflow-hidden">
+                    {user.avatarUrl ? (
+                      <img src={`http://localhost:3000${user.avatarUrl}`} alt={user.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm bg-gradient-to-br from-indigo-500 to-purple-500">
+                        {user.username[0].toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-white truncate">{user.username}</p>
+                    <p className="text-slate-500 text-xs truncate">User #{user.id}</p>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {/* Who to follow */}

@@ -1,7 +1,7 @@
 # ☁️ OmniSocial - Microservices Cloud Project
 
 > Đồ án môn học Điện toán đám mây | Học viện Công nghệ Bưu chính Viễn thông (PTIT)
-> Tác giả: Nguyễn Bảo
+> Tác giả: Nguyễn Khắc Bảo-N22DCCN006 X Nguyễn Chí Hiếu-N22DCCN079
 
 ## 📖 Giới thiệu
 **OmniSocial** là một mạng xã hội thu nhỏ được xây dựng dựa trên kiến trúc **Microservices**. Dự án tập trung vào việc áp dụng các kỹ thuật lập trình phân tán, xử lý bất đồng bộ qua Message Queue và triển khai container hóa.

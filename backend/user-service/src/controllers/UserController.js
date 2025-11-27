@@ -2,8 +2,32 @@ const userService = require('../services/UserService');
 const User = require('../models/User');
 const Follow = require('../models/Follow');
 const sequelize = require('../config/database');
+const { Op } = require('sequelize');
 
 class UserController {
+  async search(req, res) {
+    try {
+      const { q } = req.query;
+      if (!q) return res.status(200).json({ success: true, data: [] });
+
+      const users = await User.findAll({
+        where: {
+          [Op.or]: [
+            { username: { [Op.iLike]: `%${q}%` } },
+            { email: { [Op.iLike]: `%${q}%` } }
+          ]
+        },
+        attributes: ['id', 'username', 'avatarUrl'],
+        limit: 10
+      });
+
+      res.status(200).json({ success: true, data: users });
+    } catch (error) {
+      console.error("Search Error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
   async register(req, res) {
     try {
       const user = await userService.register(req.body);
@@ -78,6 +102,19 @@ class UserController {
       }
 
       await Follow.create({ followerId, followingId });
+
+      // Notification Logic
+      try {
+         const { publishToQueue } = require('../config/rabbitmq');
+         await publishToQueue({
+           type: 'USER_FOLLOWED',
+           recipientId: followingId,
+           senderId: followerId
+         });
+      } catch (err) {
+        console.error("Failed to publish notification", err);
+      }
+
       res.status(200).json({ success: true, message: 'Followed successfully' });
     } catch (error) {
       console.error(error);
@@ -119,6 +156,29 @@ class UserController {
       res.status(200).json({ success: true, data: ids });
     } catch (error) {
       console.error(error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async getUsersByIds(req, res) {
+    try {
+      const { ids } = req.query;
+      if (!ids) return res.status(200).json({ success: true, data: [] });
+
+      const idList = ids.split(',').map(id => parseInt(id));
+      
+      const users = await User.findAll({
+        where: {
+          id: {
+            [Op.in]: idList
+          }
+        },
+        attributes: ['id', 'username', 'avatarUrl']
+      });
+
+      res.status(200).json({ success: true, data: users });
+    } catch (error) {
+      console.error("Batch User Fetch Error:", error);
       res.status(500).json({ success: false, message: error.message });
     }
   }

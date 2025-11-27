@@ -37,7 +37,7 @@ const Sidebar = () => {
         <nav className="space-y-2">
           <SidebarItem icon={Home} text="Home" to="/" active={location.pathname === '/'} />
           <SidebarItem icon={Hash} text="Explore" />
-          <SidebarItem icon={Bell} text="Notifications" />
+          <SidebarItem icon={Bell} text="Notifications" to="/notifications" active={location.pathname === '/notifications'} />
           <SidebarItem 
             icon={User} 
             text="Profile" 

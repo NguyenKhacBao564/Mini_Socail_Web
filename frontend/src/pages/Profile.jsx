@@ -34,7 +34,17 @@ const Profile = () => {
 
         // Fetch User Posts
         const postsRes = await axiosClient.get(`/posts?userId=${userId}`);
-        setPosts(postsRes.data.data || postsRes.data);
+        const rawPosts = postsRes.data.data || postsRes.data;
+        
+        // Enrich posts with profile data since we know the author is the profile owner
+        // Note: 'data' variable holds the profile info from the previous call
+        const profileData = profileRes.data.data; 
+        const enrichedPosts = rawPosts.map(post => ({
+          ...post,
+          author: profileData
+        }));
+
+        setPosts(enrichedPosts);
       } catch (error) {
         console.error("Failed to fetch profile data", error);
       } finally {

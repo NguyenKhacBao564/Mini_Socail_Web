@@ -2,7 +2,7 @@ const amqp = require('amqplib');
 
 let channel = null;
 let connection = null;
-const QUEUE_NAME = 'post_events';
+const QUEUE_NAME = 'notification_events'; // UPDATED Queue Name
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://guest:guest@rabbitmq:5672';
 
 const connect = async (retries = 5) => {

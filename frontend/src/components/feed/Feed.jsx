@@ -20,7 +20,6 @@ const Feed = () => {
       let url = '/posts';
       
       if (activeTab === 'following') {
-        // 1. Get list of following IDs
         const followRes = await axiosClient.get('/users/following-ids');
         const followingIds = followRes.data.data;
 
@@ -29,13 +28,36 @@ const Feed = () => {
           setLoading(false);
           return;
         }
-        
-        // 2. Get posts for these IDs
         url = `/posts?userIds=${followingIds.join(',')}`;
       }
 
+      // 1. Fetch Posts
       const res = await axiosClient.get(url);
-      setPosts(res.data.data || res.data); 
+      const rawPosts = res.data.data || res.data;
+
+      if (rawPosts.length === 0) {
+        setPosts([]);
+        return;
+      }
+
+      // 2. Extract Unique User IDs
+      const userIds = [...new Set(rawPosts.map(p => p.userId))];
+
+      // 3. Fetch User Details (Batch)
+      const usersRes = await axiosClient.get(`/users/batch?ids=${userIds.join(',')}`);
+      const users = usersRes.data.data;
+      
+      // Create a map for quick lookup: { [id]: userObject }
+      const userMap = {};
+      users.forEach(u => { userMap[u.id] = u; });
+
+      // 4. Attach User Data to Posts
+      const enrichedPosts = rawPosts.map(post => ({
+        ...post,
+        author: userMap[post.userId] || { username: 'Unknown', avatarUrl: null }
+      }));
+
+      setPosts(enrichedPosts); 
     } catch (error) {
       console.error("Failed to fetch posts", error);
     } finally {

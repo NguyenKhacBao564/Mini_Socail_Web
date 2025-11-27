@@ -99,6 +99,26 @@ class PostController {
         return res.status(200).json({ success: true, isLiked: false });
       } else {
         await Like.create({ userId, postId });
+
+        // Notification Logic
+        try {
+          const post = await Post.findByPk(postId);
+          if (post && post.userId != userId) { // Don't notify self-like
+             // Reuse the existing publishToQueue from '../config/rabbitmq'? 
+             // The prompt said "Update PostController... publish event".
+             // I will use the rabbitmq utility I checked earlier.
+             const { publishToQueue } = require('../config/rabbitmq');
+             await publishToQueue({
+               type: 'POST_LIKED',
+               recipientId: post.userId,
+               senderId: userId,
+               postId: post.id
+             });
+          }
+        } catch (err) {
+          console.error("Failed to publish notification", err);
+        }
+
         return res.status(201).json({ success: true, isLiked: true });
       }
     } catch (error) {

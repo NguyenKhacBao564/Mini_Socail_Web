@@ -51,9 +51,13 @@ const PostCard = ({ post }) => {
         <Link 
           to={`/profile/${post.userId}`} 
           onClick={(e) => e.stopPropagation()}
-          className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex-shrink-0 flex items-center justify-center font-bold text-white hover:opacity-80 transition-opacity"
+          className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex-shrink-0 flex items-center justify-center font-bold text-white hover:opacity-80 transition-opacity overflow-hidden"
         >
-          {post.userId ? post.userId.toString()[0] : 'U'}
+          {post.author?.avatarUrl ? (
+            <img src={`http://localhost:3000${post.author.avatarUrl}`} alt={post.author.username} className="w-full h-full object-cover" />
+          ) : (
+            post.author?.username?.[0]?.toUpperCase() || 'U'
+          )}
         </Link>
 
         {/* Content */}
@@ -66,7 +70,7 @@ const PostCard = ({ post }) => {
                 onClick={(e) => e.stopPropagation()}
                 className="font-bold text-white hover:underline"
               >
-                User #{post.userId}
+                {post.author?.username || `User #${post.userId}`}
               </Link>
               <span className="text-slate-500 text-sm">· {new Date(post.createdAt).toLocaleDateString()}</span>
             </div>
