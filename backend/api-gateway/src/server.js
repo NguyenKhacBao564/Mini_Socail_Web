@@ -23,7 +23,14 @@ app.use('/user-assets', createProxyMiddleware({
   changeOrigin: true,
 }));
 
-// 2. Public Routes
+// 2. WebSocket Proxy (Socket.io)
+app.use('/socket.io', createProxyMiddleware({
+  target: 'http://notification-service:3005', // Correct Port for Notification Service
+  changeOrigin: true,
+  ws: true, // Enable WebSocket support
+}));
+
+// 3. Public Routes
 app.use(['/api/users/login', '/api/users/register'], createProxyMiddleware({
   target: 'http://user-service:3001',
   changeOrigin: true,

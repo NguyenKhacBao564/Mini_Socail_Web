@@ -4,7 +4,8 @@ const Notification = require('../models/Notification');
 const QUEUE_NAME = 'notification_events';
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://guest:guest@rabbitmq:5672';
 
-const startConsumer = async () => {
+// Now accepts `io` instance
+const startConsumer = async (io) => {
   let retries = 5;
   while (retries) {
     try {
@@ -21,26 +22,32 @@ const startConsumer = async () => {
             const content = JSON.parse(msg.content.toString());
             console.log(`[Notification-Service] Received event:`, content);
 
-            // Save notification to DB
-            await Notification.create({
+            // 1. Save notification to DB
+            const notification = await Notification.create({
               recipientId: content.recipientId,
               senderId: content.senderId,
-              type: content.type, // e.g. 'POST_LIKED', 'USER_FOLLOWED'
+              type: content.type,
               postId: content.postId || null
             });
+
+            // 2. Emit Real-Time Event
+            if (io) {
+              // Emit to the specific user's room
+              io.to(`user_${content.recipientId}`).emit('new_notification', notification);
+              console.log(`[Socket] Emitted 'new_notification' to user_${content.recipientId}`);
+            }
 
             channel.ack(msg);
           } catch (err) {
             console.error('[Notification-Worker] Error processing message:', err);
-            // channel.nack(msg); // Use nack with requeue=false or similar if needed
-            channel.ack(msg); // Ack to avoid loop for now
+            channel.ack(msg);
           }
         }
       });
 
       connection.on('close', () => {
         console.error('[Notification-Worker] Connection closed, retrying...');
-        setTimeout(startConsumer, 5000);
+        setTimeout(() => startConsumer(io), 5000);
       });
 
       return;
