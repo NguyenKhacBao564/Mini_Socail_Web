@@ -38,7 +38,12 @@ const Sidebar = () => {
           <SidebarItem icon={Home} text="Home" to="/" active={location.pathname === '/'} />
           <SidebarItem icon={Hash} text="Explore" />
           <SidebarItem icon={Bell} text="Notifications" />
-          <SidebarItem icon={User} text="Profile" />
+          <SidebarItem 
+            icon={User} 
+            text="Profile" 
+            to={user ? `/profile/${user.id}` : '#'} 
+            active={location.pathname.startsWith('/profile')} 
+          />
           <SidebarItem icon={Settings} text="Settings" />
         </nav>
 
@@ -51,7 +56,7 @@ const Sidebar = () => {
 
       {/* User & Logout */}
       <div className="space-y-2">
-        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
+        <Link to={user ? `/profile/${user.id}` : '#'} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
             {user?.username?.[0]?.toUpperCase() || 'U'}
           </div>
@@ -59,7 +64,7 @@ const Sidebar = () => {
             <p className="font-bold text-sm truncate text-white">{user?.username}</p>
             <p className="text-slate-500 text-xs truncate">@{user?.username}</p>
           </div>
-        </div>
+        </Link>
         <SidebarItem icon={LogOut} text="Logout" onClick={logout} isDanger />
       </div>
     </div>

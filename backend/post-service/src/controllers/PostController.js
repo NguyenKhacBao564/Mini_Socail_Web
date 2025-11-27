@@ -2,6 +2,7 @@ const postService = require('../services/PostService');
 const Post = require('../models/Post');
 const Like = require('../models/Like');
 const sequelize = require('../config/database');
+const { Op } = require('sequelize'); // Import Op for advanced queries
 
 class PostController {
   async create(req, res) {
@@ -16,10 +17,6 @@ class PostController {
       // Check if image was uploaded
       let imageUrl = null;
       if (req.file) {
-        // Construct the public URL. 
-        // Assuming the Gateway proxies /uploads to this service's /uploads
-        // The URL stored in DB should be relative or absolute path accessible by frontend.
-        // Let's store '/uploads/filename.jpg'
         imageUrl = `/uploads/${req.file.filename}`;
       }
 
@@ -34,8 +31,20 @@ class PostController {
   async getAll(req, res) {
     try {
       const currentUserId = req.headers['x-user-id'];
+      const filterUserId = req.query.userId; 
+      const filterUserIds = req.query.userIds; // Check for comma separated list
+
+      let whereClause = {};
+
+      if (filterUserId) {
+        whereClause = { userId: filterUserId };
+      } else if (filterUserIds) {
+        const ids = filterUserIds.split(',').map(id => parseInt(id));
+        whereClause = { userId: { [Op.in]: ids } };
+      }
 
       const posts = await Post.findAll({
+        where: whereClause, 
         include: [
           {
             model: Like,

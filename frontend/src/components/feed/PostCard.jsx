@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import CommentSection from './CommentSection';
 
@@ -10,7 +11,8 @@ const PostCard = ({ post }) => {
   const [showComments, setShowComments] = useState(false);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
 
-  const handleLike = async () => {
+  const handleLike = async (e) => {
+    e.stopPropagation(); // Prevent navigation when clicking like
     if (isLikeLoading) return;
     
     // Optimistic Update
@@ -33,7 +35,8 @@ const PostCard = ({ post }) => {
     }
   };
 
-  const handleCommentClick = () => {
+  const handleCommentClick = (e) => {
+    e.stopPropagation();
     setShowComments(!showComments);
   };
 
@@ -44,17 +47,27 @@ const PostCard = ({ post }) => {
       className="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors"
     >
       <div className="flex gap-3">
-        {/* Avatar */}
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex-shrink-0 flex items-center justify-center font-bold text-white">
+        {/* Avatar - Clickable */}
+        <Link 
+          to={`/profile/${post.userId}`} 
+          onClick={(e) => e.stopPropagation()}
+          className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex-shrink-0 flex items-center justify-center font-bold text-white hover:opacity-80 transition-opacity"
+        >
           {post.userId ? post.userId.toString()[0] : 'U'}
-        </div>
+        </Link>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-white hover:underline">User #{post.userId}</span>
+              <Link 
+                to={`/profile/${post.userId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="font-bold text-white hover:underline"
+              >
+                User #{post.userId}
+              </Link>
               <span className="text-slate-500 text-sm">· {new Date(post.createdAt).toLocaleDateString()}</span>
             </div>
             <button className="text-slate-500 hover:text-blue-400 p-1 rounded-full hover:bg-blue-500/10">

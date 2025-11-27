@@ -5,6 +5,7 @@ import PostCard from './PostCard';
 import { Image, X } from 'lucide-react';
 
 const Feed = () => {
+  const [activeTab, setActiveTab] = useState('for-you'); // 'for-you' | 'following'
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -14,8 +15,26 @@ const Feed = () => {
   const fileInputRef = useRef(null);
 
   const fetchPosts = async () => {
+    setLoading(true);
     try {
-      const res = await axiosClient.get('/posts');
+      let url = '/posts';
+      
+      if (activeTab === 'following') {
+        // 1. Get list of following IDs
+        const followRes = await axiosClient.get('/users/following-ids');
+        const followingIds = followRes.data.data;
+
+        if (followingIds.length === 0) {
+          setPosts([]);
+          setLoading(false);
+          return;
+        }
+        
+        // 2. Get posts for these IDs
+        url = `/posts?userIds=${followingIds.join(',')}`;
+      }
+
+      const res = await axiosClient.get(url);
       setPosts(res.data.data || res.data); 
     } catch (error) {
       console.error("Failed to fetch posts", error);
@@ -26,7 +45,7 @@ const Feed = () => {
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [activeTab]); // Re-fetch when tab changes
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -54,11 +73,6 @@ const Feed = () => {
       if (selectedImage) {
         formData.append('image', selectedImage);
       }
-
-      // NOTE: When using FormData with axios, Content-Type header is usually set automatically 
-      // to multipart/form-data with the correct boundary.
-      // However, since our axiosClient interceptor adds 'Content-Type': 'application/json' by default,
-      // we need to let the browser set it for this request.
       
       await axiosClient.post('/posts', formData, {
         headers: {
@@ -68,7 +82,13 @@ const Feed = () => {
 
       setContent('');
       clearImage();
-      fetchPosts(); 
+      // If on 'following' tab, we might not see the new post immediately unless we follow ourselves. 
+      // Switch to 'for-you' or just re-fetch current tab.
+      if (activeTab === 'for-you') {
+        fetchPosts();
+      } else {
+        // Just reset form
+      }
     } catch (error) {
       console.error("Failed to create post", error);
     }
@@ -76,12 +96,35 @@ const Feed = () => {
 
   return (
     <div>
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-white/5 px-4 py-3">
-        <h2 className="text-xl font-bold text-white">Home</h2>
+      {/* Sticky Header with Tabs */}
+      <div className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
+        <div className="flex">
+          <button 
+            onClick={() => setActiveTab('for-you')}
+            className="flex-1 hover:bg-white/5 transition-colors cursor-pointer py-4 text-center relative"
+          >
+            <span className={`font-bold text-sm ${activeTab === 'for-you' ? 'text-white' : 'text-slate-500'}`}>
+              For you
+            </span>
+            {activeTab === 'for-you' && (
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-blue-500 rounded-full"></div>
+            )}
+          </button>
+          <button 
+            onClick={() => setActiveTab('following')}
+            className="flex-1 hover:bg-white/5 transition-colors cursor-pointer py-4 text-center relative"
+          >
+            <span className={`font-bold text-sm ${activeTab === 'following' ? 'text-white' : 'text-slate-500'}`}>
+              Following
+            </span>
+            {activeTab === 'following' && (
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-blue-500 rounded-full"></div>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Create Post Input */}
+      {/* Create Post Input (Only shown on 'For you' or typically always shown at top) */}
       <div className="p-4 border-b border-white/5">
         <div className="flex gap-4">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">
@@ -146,7 +189,11 @@ const Feed = () => {
              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
            </div>
         ) : posts.length === 0 ? (
-           <div className="text-center py-10 text-slate-500">No posts yet. Be the first to share something!</div>
+           <div className="text-center py-10 text-slate-500">
+             {activeTab === 'following' 
+               ? "You aren't following anyone yet (or they haven't posted)." 
+               : "No posts yet. Be the first to share something!"}
+           </div>
         ) : (
           posts.map((post) => <PostCard key={post.id} post={post} />)
         )}
