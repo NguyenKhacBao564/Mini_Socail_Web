@@ -127,8 +127,12 @@ const Feed = () => {
       {/* Create Post Input (Only shown on 'For you' or typically always shown at top) */}
       <div className="p-4 border-b border-white/5">
         <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">
-             {user?.username?.[0]?.toUpperCase() || 'U'}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+             {user?.avatarUrl ? (
+               <img src={`http://localhost:3000${user.avatarUrl}`} alt="User" className="w-full h-full object-cover" />
+             ) : (
+               user?.username?.[0]?.toUpperCase() || 'U'
+             )}
           </div>
           <form onSubmit={handleCreatePost} className="flex-1">
             <textarea

@@ -7,20 +7,29 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper to fetch full user data
+  const fetchCurrentUser = async (userId) => {
+    try {
+      const res = await axiosClient.get(`/users/${userId}`);
+      if (res.data.success) {
+        setUser(res.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user details", error);
+    }
+  };
+
   useEffect(() => {
     const checkLoggedIn = async () => {
       const token = localStorage.getItem('token');
       if (token) {
-        // Ideally, verify token validity with a backend call like /auth/me
-        // For now, we assume if token exists, we are "logged in" somewhat.
-        // Or decode the token if it's a JWT to get user info.
-        // Let's try to get a simple user object or decode the JWT if possible.
-        // Since we don't have a /me endpoint specified, we'll just set a flag or basic object.
         try {
-             // Decided to just trust the token for now or check if it exists.
-             // To be more robust, let's decode the payload if we can (simple base64 check).
              const payload = JSON.parse(atob(token.split('.')[1]));
+             // Set initial basic info from token to avoid UI flicker
              setUser({ id: payload.id, username: payload.username || 'User' });
+             
+             // Then fetch full details (avatar, etc)
+             await fetchCurrentUser(payload.id);
         } catch (e) {
             console.error("Invalid token", e);
             localStorage.removeItem('token');
@@ -34,18 +43,14 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await axiosClient.post('/users/login', { email, password });
-      // Backend returns { success: true, data: { token, user } }
-      const { token, user } = response.data.data; 
+      const { token, user: basicUser } = response.data.data; 
       
       localStorage.setItem('token', token);
+      setUser(basicUser);
       
-      // If user info is not returned, decode token
-      if (!user) {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          setUser({ id: payload.id, username: payload.username || email });
-      } else {
-          setUser(user);
-      }
+      // Fetch full details immediately
+      await fetchCurrentUser(basicUser.id);
+      
       return { success: true };
     } catch (error) {
       console.error("Login error", error);

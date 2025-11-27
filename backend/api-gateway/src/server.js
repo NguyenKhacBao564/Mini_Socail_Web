@@ -12,24 +12,26 @@ app.use(cors({
   credentials: true 
 }));
 
-// 1. Serve Static Uploads (Proxy to Post Service)
-// Requests to http://localhost:3000/uploads/... will go to http://post-service:3002/uploads/...
+// 1. Serve Static Uploads
 app.use('/uploads', createProxyMiddleware({
   target: 'http://post-service:3002',
   changeOrigin: true,
-  // No path rewrite needed because Post Service serves at /uploads
 }));
 
-// 2. Public Routes (Specific paths first)
+app.use('/user-assets', createProxyMiddleware({
+  target: 'http://user-service:3001',
+  changeOrigin: true,
+}));
+
+// 2. Public Routes
 app.use(['/api/users/login', '/api/users/register'], createProxyMiddleware({
   target: 'http://user-service:3001',
   changeOrigin: true,
-  // No path rewrite needed as the path matches the target
 }));
 
 // 3. Protected Routes
 const protectedRoutes = {
-  '/api/users': 'http://user-service:3001', // Now catches all other user routes (profile, follow, etc)
+  '/api/users': 'http://user-service:3001', 
   '/api/posts': 'http://post-service:3002',
   '/api/comments': 'http://comment-service:3003',
   '/api/feed':  'http://feed-service:3004',
@@ -44,9 +46,7 @@ for (const [path, target] of Object.entries(protectedRoutes)) {
         proxyReq.setHeader('x-user-id', req.headers['x-user-id']);
       }
     },
-    // Path rewrite is generally not needed if the prefix matches, 
-    // but strictly speaking:
-    // If path is /api/users, and request is /api/users/123, target gets /api/users/123. Correct.
+    pathRewrite: { [`^${path}`]: path },
   }));
 }
 

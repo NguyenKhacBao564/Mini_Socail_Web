@@ -28,7 +28,7 @@ class UserController {
       const currentUserId = req.headers['x-user-id'];
 
       const user = await User.findByPk(targetUserId, {
-        attributes: ['id', 'username', 'email', 'createdAt'],
+        attributes: ['id', 'username', 'email', 'createdAt', 'avatarUrl', 'coverUrl', 'bio'],
       });
 
       if (!user) {
@@ -119,6 +119,36 @@ class UserController {
       res.status(200).json({ success: true, data: ids });
     } catch (error) {
       console.error(error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async updateProfile(req, res) {
+    try {
+      const userId = req.headers['x-user-id'];
+      if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+      const { bio } = req.body;
+      const updates = {};
+      if (bio !== undefined) updates.bio = bio;
+
+      if (req.files) {
+        if (req.files.avatar) {
+          updates.avatarUrl = `/user-assets/${req.files.avatar[0].filename}`;
+        }
+        if (req.files.cover) {
+          updates.coverUrl = `/user-assets/${req.files.cover[0].filename}`;
+        }
+      }
+
+      await User.update(updates, { where: { id: userId } });
+      const updatedUser = await User.findByPk(userId, {
+        attributes: ['id', 'username', 'email', 'avatarUrl', 'coverUrl', 'bio']
+      });
+
+      res.status(200).json({ success: true, data: updatedUser });
+    } catch (error) {
+      console.error("Update Profile Error:", error);
       res.status(500).json({ success: false, message: error.message });
     }
   }

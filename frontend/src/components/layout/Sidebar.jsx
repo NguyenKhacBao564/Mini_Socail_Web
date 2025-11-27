@@ -57,8 +57,12 @@ const Sidebar = () => {
       {/* User & Logout */}
       <div className="space-y-2">
         <Link to={user ? `/profile/${user.id}` : '#'} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
-            {user?.username?.[0]?.toUpperCase() || 'U'}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+            {user?.avatarUrl ? (
+               <img src={`http://localhost:3000${user.avatarUrl}`} alt="User" className="w-full h-full object-cover" />
+             ) : (
+               user?.username?.[0]?.toUpperCase() || 'U'
+             )}
           </div>
           <div className="hidden xl:block overflow-hidden">
             <p className="font-bold text-sm truncate text-white">{user?.username}</p>

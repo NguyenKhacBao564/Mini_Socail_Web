@@ -22,6 +22,18 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  avatarUrl: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  coverUrl: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  bio: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
 }, {
   timestamps: true,
 });
