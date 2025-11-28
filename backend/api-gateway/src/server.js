@@ -14,17 +14,26 @@ const COMMENT_SERVICE_URL = process.env.COMMENT_SERVICE_URL || 'http://comment-s
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005';
 const FEED_SERVICE_URL = process.env.FEED_SERVICE_URL || 'http://feed-service:3004';
 
+// Configure CORS dynamically
+const allowedOrigins = ['http://localhost:5173'];
+const frontendUrl = process.env.FRONTEND_URL;
+
+if (frontendUrl) {
+  allowedOrigins.push(frontendUrl);
+}
 
 app.use(cors({ 
-  origin: 'http://localhost:5173', 
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true 
 }));
-
-// Previously, these proxied static asset servers. With GCS, direct access is used.
-// Removing these as they are no longer necessary and would point to non-existent endpoints.
-// app.use('/uploads', createProxyMiddleware({ target: POST_SERVICE_URL, changeOrigin: true }));
-// app.use('/user-assets', createProxyMiddleware({ target: USER_SERVICE_URL, changeOrigin: true }));
-
 
 // WebSocket Proxy (Socket.io)
 app.use('/socket.io', createProxyMiddleware({
