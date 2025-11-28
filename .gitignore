@@ -53,3 +53,5 @@ tmp/
 temp/
 
 GEMINI.md
+
+gcs-key.json

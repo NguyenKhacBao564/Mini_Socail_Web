@@ -11,12 +11,13 @@ const Feed = () => {
   const [content, setContent] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
+  const [isPosting, setIsPosting] = useState(false); 
   const { user } = useContext(AuthContext);
   const fileInputRef = useRef(null);
 
   const fetchPosts = async () => {
-    setLoading(true);
+    setLoading(true); 
     try {
       let url = '/posts';
       
@@ -26,8 +27,7 @@ const Feed = () => {
 
         if (followingIds.length === 0) {
           setPosts([]);
-          setLoading(false);
-          return;
+          return; 
         }
         url = `/posts?userIds=${followingIds.join(',')}`;
       }
@@ -67,8 +67,8 @@ const Feed = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, [activeTab]); // Re-fetch when tab changes
+    fetchPosts(); 
+  }, [activeTab]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -89,31 +89,73 @@ const Feed = () => {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     if (!content.trim() && !selectedImage) return;
+
+    // --- 1. Optimistic Update ---
+    
+    const tempId = Date.now(); // Temporary ID for local tracking
+    const tempPost = {
+      id: tempId,
+      userId: user?.id,
+      content: content,
+      imageUrl: previewUrl, // Use the blob URL directly
+      createdAt: new Date().toISOString(),
+      likesCount: 0,
+      isLiked: false,
+      author: {
+        id: user?.id,
+        username: user?.username || 'You',
+        avatarUrl: user?.avatarUrl,
+      },
+      isOptimistic: true, // Flag to potentially style it differently (e.g., opacity)
+    };
+
+    // Update UI Immediately
+    setPosts((prev) => [tempPost, ...prev]);
+    
+    // Reset Form Immediately
+    const postContent = content; // Capture for request
+    const postImage = selectedImage; // Capture for request
+    setContent('');
+    clearImage();
+    setIsPosting(false); // Ensure UI is interactive
+
+    // --- 2. Background Sync ---
     
     try {
       const formData = new FormData();
-      formData.append('content', content);
-      if (selectedImage) {
-        formData.append('image', selectedImage);
+      formData.append('content', postContent);
+      if (postImage) {
+        formData.append('image', postImage);
       }
       
-      await axiosClient.post('/posts', formData, {
+      const res = await axiosClient.post('/posts', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
       });
 
-      setContent('');
-      clearImage();
-      // If on 'following' tab, we might not see the new post immediately unless we follow ourselves. 
-      // Switch to 'for-you' or just re-fetch current tab.
-      if (activeTab === 'for-you') {
-        fetchPosts();
-      } else {
-        // Just reset form
+      if (res.data.success) {
+        const realPost = res.data.data;
+        
+        // Enrich real post
+        const enrichedRealPost = {
+          ...realPost,
+          author: tempPost.author, // Keep the author info
+          likesCount: 0,
+          isLiked: false,
+        };
+
+        // Replace temp post with real post
+        setPosts((prev) => prev.map((p) => (p.id === tempId ? enrichedRealPost : p)));
       }
     } catch (error) {
-      console.error("Failed to create post", error);
+      console.error("Failed to create post background sync", error);
+      
+      // Remove temp post on failure and alert user
+      setPosts((prev) => prev.filter((p) => p.id !== tempId));
+      alert("Failed to post. Please try again."); // Simple alert for now
+      
+      // Optionally restore content here if desired, but simple removal is safer
     }
   };
 
@@ -147,7 +189,7 @@ const Feed = () => {
         </div>
       </div>
 
-      {/* Create Post Input (Only shown on 'For you' or typically always shown at top) */}
+      {/* Create Post Input */}
       <div className="p-4 border-b border-white/5">
         <div className="flex gap-4">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
@@ -163,6 +205,7 @@ const Feed = () => {
               placeholder="What is happening?!"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              disabled={isPosting}
             ></textarea>
 
             {/* Image Preview */}
@@ -172,6 +215,7 @@ const Feed = () => {
                 <button 
                   type="button"
                   onClick={clearImage}
+                  disabled={isPosting}
                   className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full transition-colors"
                 >
                   <X size={16} />
@@ -187,11 +231,13 @@ const Feed = () => {
                   onChange={handleImageSelect} 
                   className="hidden" 
                   accept="image/*"
+                  disabled={isPosting}
                 />
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current.click()}
-                  className="text-blue-400 hover:bg-blue-500/10 p-2 rounded-full transition-colors"
+                  disabled={isPosting}
+                  className={`text-blue-400 p-2 rounded-full transition-colors ${isPosting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500/10'}`}
                 >
                   <Image size={20} />
                 </button>
@@ -199,10 +245,10 @@ const Feed = () => {
               
               <button 
                 type="submit" 
-                disabled={!content.trim() && !selectedImage}
+                disabled={(!content.trim() && !selectedImage) || isPosting}
                 className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 text-white font-bold px-5 py-1.5 rounded-full text-sm transition-all"
               >
-                Post
+                {isPosting ? 'Posting...' : 'Post'}
               </button>
             </div>
           </form>
@@ -222,7 +268,11 @@ const Feed = () => {
                : "No posts yet. Be the first to share something!"}
            </div>
         ) : (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
+          posts.map((post) => (
+            <div key={post.id} className={post.isOptimistic ? "opacity-70 transition-opacity" : ""}>
+               <PostCard post={post} />
+            </div>
+          ))
         )}
       </div>
     </div>
