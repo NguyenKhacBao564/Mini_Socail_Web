@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 import { Heart, UserPlus, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUtils';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -84,7 +85,7 @@ const Notifications = () => {
               <Link to={`/profile/${n.senderId}`} className="flex-shrink-0">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center font-bold text-white overflow-hidden">
                   {n.sender.avatarUrl ? (
-                    <img src={`http://localhost:3000${n.sender.avatarUrl}`} alt={n.sender.username} className="w-full h-full object-cover" />
+                    <img src={getImageUrl(n.sender.avatarUrl)} alt={n.sender.username} className="w-full h-full object-cover" />
                   ) : (
                     n.sender.username[0].toUpperCase()
                   )}

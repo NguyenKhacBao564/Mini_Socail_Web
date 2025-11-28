@@ -5,6 +5,7 @@ import PostCard from '../components/feed/PostCard';
 import { AuthContext } from '../context/AuthContext';
 import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 import EditProfileModal from '../components/profile/EditProfileModal';
+import { getImageUrl } from '../utils/imageUtils';
 
 const Profile = () => {
   const { userId } = useParams();
@@ -104,7 +105,7 @@ const Profile = () => {
       <div className="relative">
         <div className="h-48 w-full overflow-hidden bg-slate-800">
           {profile.coverUrl ? (
-            <img src={`http://localhost:3000${profile.coverUrl}`} alt="Cover" className="w-full h-full object-cover" />
+            <img src={getImageUrl(profile.coverUrl)} alt="Cover" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600"></div>
           )}
@@ -113,7 +114,7 @@ const Profile = () => {
         <div className="absolute -bottom-16 left-4 p-1 bg-slate-950 rounded-full">
            <div className="w-32 h-32 rounded-full bg-slate-800 overflow-hidden flex items-center justify-center">
              {profile.avatarUrl ? (
-               <img src={`http://localhost:3000${profile.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+               <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover" />
              ) : (
                <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-4xl font-bold text-white">
                  {profile.username ? profile.username[0].toUpperCase() : 'U'}

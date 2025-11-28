@@ -2,23 +2,8 @@ version: '3.8'
 
 services:
   # --- Infrastructure ---
-  postgres:
-    image: postgres:15-alpine
-    container_name: social_postgres
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: social_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d social_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
+  # Bỏ Postgres Local đi vì đã dùng Cloud SQL
+  
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: social_rabbitmq
@@ -49,14 +34,18 @@ services:
     container_name: social_user_service
     environment:
       - PORT=3001
-      - DB_HOST=postgres
-      - DB_USER=admin
-      - DB_PASS=password123
-      - DB_NAME=social_db
+      - DB_HOST=35.229.227.81
+      - DB_USER=postgres
+      # Bọc mật khẩu trong dấu nháy đơn để tránh lỗi ký tự đặc biệt
+      - DB_PASS=sp+~hh@uCg?6_T=]
+      # Đổi về 'postgres' nếu bạn chưa tạo DB riêng
+      - DB_NAME=postgres 
       - JWT_SECRET=mysupersecretkey
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcs-key.json
+      - GCS_BUCKET_NAME=omnisocial-uploads-unique-123
+    volumes:
+      - ./gcs-key.json:/app/gcs-key.json
+    # Bỏ depends_on postgres
 
   # 3. Post Service
   post-service:
@@ -64,13 +53,15 @@ services:
     container_name: social_post_service
     environment:
       - PORT=3002
-      - DB_HOST=postgres
-      - DB_USER=admin
-      - DB_PASS=password123
-      - DB_NAME=social_db
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - DB_HOST=35.229.227.81
+      - DB_USER=postgres
+      - DB_PASS=sp+~hh@uCg?6_T=]
+      - DB_NAME=postgres
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcs-key.json
+      - GCS_BUCKET_NAME=omnisocial-uploads-unique-123
+    volumes:
+      - ./gcs-key.json:/app/gcs-key.json
+    # Bỏ depends_on postgres
 
   # 4. Comment Service
   comment-service:
@@ -78,15 +69,13 @@ services:
     container_name: social_comment_service
     environment:
       - PORT=3003
-      - DB_HOST=postgres
-      - DB_USER=admin
-      - DB_PASS=password123
-      - DB_NAME=social_db
+      - DB_HOST=35.229.227.81
+      - DB_USER=postgres
+      - DB_PASS=sp+~hh@uCg?6_T=]
+      - DB_NAME=postgres
     ports:
       - "3003:3003"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    # Bỏ depends_on postgres
   
   # 5. Frontend
   frontend:
@@ -106,18 +95,14 @@ services:
     container_name: social_notification_service
     environment:
       - PORT=3005
-      - DB_HOST=postgres
-      - DB_USER=admin
-      - DB_PASS=password123
-      - DB_NAME=social_db
+      - DB_HOST=35.229.227.81
+      - DB_USER=postgres
+      - DB_PASS=sp+~hh@uCg?6_T=]
+      - DB_NAME=postgres
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     ports:
       - "3005:3005"
     depends_on:
-      postgres:
-        condition: service_healthy
+      # Bỏ postgres
       rabbitmq:
         condition: service_started
-
-volumes:
-  pgdata:

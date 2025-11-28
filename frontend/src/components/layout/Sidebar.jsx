@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, User, Bell, LogOut, Settings, Hash } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const SidebarItem = ({ icon: Icon, text, to, active, onClick, isDanger }) => (
   <Link 
@@ -59,7 +60,7 @@ const Sidebar = () => {
         <Link to={user ? `/profile/${user.id}` : '#'} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
             {user?.avatarUrl ? (
-               <img src={`http://localhost:3000${user.avatarUrl}`} alt="User" className="w-full h-full object-cover" />
+               <img src={getImageUrl(user.avatarUrl)} alt="User" className="w-full h-full object-cover" />
              ) : (
                user?.username?.[0]?.toUpperCase() || 'U'
              )}

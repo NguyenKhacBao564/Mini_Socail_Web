@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera, Upload } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => {
   const [bio, setBio] = useState(currentUser.bio || '');
   const [avatar, setAvatar] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(currentUser.avatarUrl ? `http://localhost:3000${currentUser.avatarUrl}` : null);
+  const [avatarPreview, setAvatarPreview] = useState(currentUser.avatarUrl ? getImageUrl(currentUser.avatarUrl) : null);
   const [cover, setCover] = useState(null);
-  const [coverPreview, setCoverPreview] = useState(currentUser.coverUrl ? `http://localhost:3000${currentUser.coverUrl}` : null);
+  const [coverPreview, setCoverPreview] = useState(currentUser.coverUrl ? getImageUrl(currentUser.coverUrl) : null);
   const [saving, setSaving] = useState(false);
 
   const handleAvatarChange = (e) => {

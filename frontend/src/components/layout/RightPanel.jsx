@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const UserSuggestion = ({ name, handle, color }) => (
   <div className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl cursor-pointer transition-colors">
@@ -69,7 +70,7 @@ const RightPanel = () => {
                 >
                   <div className="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0 overflow-hidden">
                     {user.avatarUrl ? (
-                      <img src={`http://localhost:3000${user.avatarUrl}`} alt={user.username} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm bg-gradient-to-br from-indigo-500 to-purple-500">
                         {user.username[0].toUpperCase()}

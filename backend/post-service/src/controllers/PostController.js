@@ -2,7 +2,9 @@ const postService = require('../services/PostService');
 const Post = require('../models/Post');
 const Like = require('../models/Like');
 const sequelize = require('../config/database');
-const { Op } = require('sequelize'); // Import Op for advanced queries
+const { Op } = require('sequelize');
+const uploadToGCS = require('../utils/gcsUpload');
+const { publishToQueue } = require('../config/rabbitmq');
 
 class PostController {
   async create(req, res) {
@@ -14,10 +16,14 @@ class PostController {
         return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      // Check if image was uploaded
+      // Upload image to GCS if present
       let imageUrl = null;
       if (req.file) {
-        imageUrl = `/uploads/${req.file.filename}`;
+        try {
+          imageUrl = await uploadToGCS(req.file);
+        } catch (uploadError) {
+          return res.status(500).json({ success: false, message: 'Image upload failed' });
+        }
       }
 
       const post = await postService.createPost({ userId, content, imageUrl });
@@ -32,7 +38,7 @@ class PostController {
     try {
       const currentUserId = req.headers['x-user-id'];
       const filterUserId = req.query.userId; 
-      const filterUserIds = req.query.userIds; // Check for comma separated list
+      const filterUserIds = req.query.userIds; 
 
       let whereClause = {};
 
@@ -103,11 +109,7 @@ class PostController {
         // Notification Logic
         try {
           const post = await Post.findByPk(postId);
-          if (post && post.userId != userId) { // Don't notify self-like
-             // Reuse the existing publishToQueue from '../config/rabbitmq'? 
-             // The prompt said "Update PostController... publish event".
-             // I will use the rabbitmq utility I checked earlier.
-             const { publishToQueue } = require('../config/rabbitmq');
+          if (post && post.userId != userId) { 
              await publishToQueue({
                type: 'POST_LIKED',
                recipientId: post.userId,

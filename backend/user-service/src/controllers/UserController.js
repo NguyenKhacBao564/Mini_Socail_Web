@@ -3,6 +3,8 @@ const User = require('../models/User');
 const Follow = require('../models/Follow');
 const sequelize = require('../config/database');
 const { Op } = require('sequelize');
+const uploadToGCS = require('../utils/gcsUpload');
+const { publishToQueue } = require('../config/rabbitmq');
 
 class UserController {
   async search(req, res) {
@@ -105,14 +107,13 @@ class UserController {
 
       // Notification Logic
       try {
-         const { publishToQueue } = require('../config/rabbitmq');
          await publishToQueue({
            type: 'USER_FOLLOWED',
            recipientId: followingId,
            senderId: followerId
          });
       } catch (err) {
-        console.error("Failed to publish notification", err);
+        console.error("Failed to publish notification (check rabbitmq config)", err.message);
       }
 
       res.status(200).json({ success: true, message: 'Followed successfully' });
@@ -194,10 +195,18 @@ class UserController {
 
       if (req.files) {
         if (req.files.avatar) {
-          updates.avatarUrl = `/user-assets/${req.files.avatar[0].filename}`;
+          try {
+            updates.avatarUrl = await uploadToGCS(req.files.avatar[0]);
+          } catch (err) {
+            console.error("Avatar upload failed:", err);
+          }
         }
         if (req.files.cover) {
-          updates.coverUrl = `/user-assets/${req.files.cover[0].filename}`;
+          try {
+             updates.coverUrl = await uploadToGCS(req.files.cover[0]);
+          } catch (err) {
+            console.error("Cover upload failed:", err);
+          }
         }
       }
 

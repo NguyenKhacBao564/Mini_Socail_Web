@@ -3,6 +3,7 @@ import axiosClient from '../../api/axiosClient';
 import { AuthContext } from '../../context/AuthContext';
 import PostCard from './PostCard';
 import { Image, X } from 'lucide-react';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState('for-you'); // 'for-you' | 'following'
@@ -151,7 +152,7 @@ const Feed = () => {
         <div className="flex gap-4">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
              {user?.avatarUrl ? (
-               <img src={`http://localhost:3000${user.avatarUrl}`} alt="User" className="w-full h-full object-cover" />
+               <img src={getImageUrl(user.avatarUrl)} alt="User" className="w-full h-full object-cover" />
              ) : (
                user?.username?.[0]?.toUpperCase() || 'U'
              )}

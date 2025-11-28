@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import CommentSection from './CommentSection';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const PostCard = ({ post }) => {
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
@@ -54,7 +55,7 @@ const PostCard = ({ post }) => {
           className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex-shrink-0 flex items-center justify-center font-bold text-white hover:opacity-80 transition-opacity overflow-hidden"
         >
           {post.author?.avatarUrl ? (
-            <img src={`http://localhost:3000${post.author.avatarUrl}`} alt={post.author.username} className="w-full h-full object-cover" />
+            <img src={getImageUrl(post.author.avatarUrl)} alt={post.author.username} className="w-full h-full object-cover" />
           ) : (
             post.author?.username?.[0]?.toUpperCase() || 'U'
           )}
@@ -88,7 +89,7 @@ const PostCard = ({ post }) => {
           {post.imageUrl && (
             <div className="mt-3 rounded-xl overflow-hidden border border-slate-800">
               <img 
-                src={`http://localhost:3000${post.imageUrl}`} 
+                src={getImageUrl(post.imageUrl)} 
                 alt="Post attachment" 
                 className="w-full h-auto object-cover" 
               />
