@@ -12,9 +12,7 @@ export const SocketProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     
     if (user && token) {
-      // Connect to Gateway (which proxies to Notification Service)
-      // Socket.io client automatically connects to window.location (http://localhost:5173)
-      // But we need to connect to API Gateway (http://localhost:3000)
+      // Connect to Production Cloud Gateway
       const newSocket = io('https://api-gateway-585107925400.asia-southeast1.run.app', {
         auth: { token },
         transports: ['websocket', 'polling'], // Force websocket preferred

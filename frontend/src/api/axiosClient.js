@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-// NOTE: For local development, ensure this points to your local API Gateway (e.g., http://localhost:3000)
-// If you are using the production URL, ensure your local environment has access.
-// KEY FIX: Added '/api' to baseURL to match Gateway routes.
+// Points to the Production Cloud Gateway
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:3000/api', 
+  baseURL: 'https://api-gateway-585107925400.asia-southeast1.run.app/api', 
   headers: {
     'Content-Type': 'application/json',
   },
