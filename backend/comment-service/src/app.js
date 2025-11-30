@@ -14,7 +14,7 @@ app.use(express.json());
 const router = express.Router();
 router.post('/', commentController.create);
 router.get('/:postId', commentController.getByPostId);
-app.use('/api/comments', router);
+app.use('/', router);
 
 // Health Check
 app.get('/health', (req, res) => res.send('Comment Service is OK'));

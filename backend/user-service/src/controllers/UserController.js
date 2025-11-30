@@ -221,6 +221,28 @@ class UserController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async changePassword(req, res) {
+    try {
+      const userId = req.headers['x-user-id'];
+      const { oldPassword, newPassword } = req.body;
+
+      if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Both old and new passwords are required' });
+      }
+
+      await userService.changePassword(userId, oldPassword, newPassword);
+      res.status(200).json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+      console.error("Change Password Error:", error);
+      // Distinguish between 400 (bad password) and 500
+      if (error.message === 'Incorrect old password') {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }
 
 module.exports = new UserController();

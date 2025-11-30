@@ -38,6 +38,19 @@ class UserService {
 
     return { token, user: { id: user.id, username: user.username } };
   }
+
+  async changePassword(userId, oldPassword, newPassword) {
+    const user = await userRepository.findByIdWithPassword(userId);
+    if (!user) throw new Error('User not found');
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) throw new Error('Incorrect old password');
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await userRepository.update(userId, { password: hashedPassword });
+
+    return true;
+  }
 }
 
 module.exports = new UserService();

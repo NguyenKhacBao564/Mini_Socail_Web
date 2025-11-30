@@ -37,7 +37,7 @@ const Sidebar = () => {
         {/* Nav Items */}
         <nav className="space-y-2">
           <SidebarItem icon={Home} text="Home" to="/" active={location.pathname === '/'} />
-          <SidebarItem icon={Hash} text="Explore" />
+          <SidebarItem icon={Hash} text="Explore" to="/explore" active={location.pathname === '/explore'} />
           <SidebarItem icon={Bell} text="Notifications" to="/notifications" active={location.pathname === '/notifications'} />
           <SidebarItem 
             icon={User} 
@@ -45,7 +45,7 @@ const Sidebar = () => {
             to={user ? `/profile/${user.id}` : '#'} 
             active={location.pathname.startsWith('/profile')} 
           />
-          <SidebarItem icon={Settings} text="Settings" />
+          <SidebarItem icon={Settings} text="Settings" to="/settings" active={location.pathname === '/settings'} />
         </nav>
 
         {/* Post Button */}

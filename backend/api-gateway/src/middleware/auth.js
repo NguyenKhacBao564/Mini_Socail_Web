@@ -16,13 +16,14 @@ const verifyToken = (req, res, next) => {
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Inject User ID into headers for downstream services
-    // Note: Headers are case-insensitive in HTTP, but Node.js conventionally lowercases them
     req.headers['x-user-id'] = verified.id;
     
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid Token' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token Expired', code: 'TOKEN_EXPIRED' });
+    }
+    return res.status(401).json({ message: 'Invalid Token', code: 'INVALID_TOKEN' });
   }
 };
 

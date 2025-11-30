@@ -14,6 +14,16 @@ class UserRepository {
       attributes: { exclude: ['password'] }
     });
   }
+
+  async findByIdWithPassword(id) {
+    return await User.findByPk(id);
+  }
+
+  async update(id, updates) {
+    return await User.update(updates, {
+      where: { id }
+    });
+  }
 }
 
 module.exports = new UserRepository();

@@ -9,6 +9,9 @@ import Register from './pages/Register';
 import Feed from './components/feed/Feed';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
+import PostDetail from './pages/PostDetail';
+import Explore from './pages/Explore';
+import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -33,6 +36,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Feed />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/explore" 
+              element={
+                <ProtectedRoute>
+                  <Explore />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/post/:postId" 
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
                 </ProtectedRoute>
               } 
             />

@@ -159,6 +159,10 @@ const Feed = () => {
     }
   };
 
+  const handleDeletePost = (postId) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
   return (
     <div>
       {/* Sticky Header with Tabs */}
@@ -270,7 +274,7 @@ const Feed = () => {
         ) : (
           posts.map((post) => (
             <div key={post.id} className={post.isOptimistic ? "opacity-70 transition-opacity" : ""}>
-               <PostCard post={post} />
+               <PostCard post={post} onDelete={handleDeletePost} />
             </div>
           ))
         )}

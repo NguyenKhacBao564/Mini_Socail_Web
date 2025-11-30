@@ -24,13 +24,14 @@ router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.get('/search', userController.search);
 router.get('/following-ids', userController.getFollowingIds);
-router.get('/batch', userController.getUsersByIds); // Batch fetch route
+router.get('/batch', userController.getUsersByIds);
 router.put('/profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), userController.updateProfile);
+router.put('/change-password', userController.changePassword);
 router.get('/:id', userController.getProfile);
 router.post('/:id/follow', userController.followUser);
 router.delete('/:id/follow', userController.unfollowUser);
 
-app.use('/api/users', router);
+app.use('/', router);
 
 // Health Check
 app.get('/health', (req, res) => res.send('User Service is OK'));

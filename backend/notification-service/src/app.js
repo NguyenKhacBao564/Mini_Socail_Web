@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
 
 // --- API Routes ---
 
-app.get('/api/notifications', async (req, res) => {
+app.get('/', async (req, res) => {
   try {
     const userId = req.headers['x-user-id'];
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });

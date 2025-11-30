@@ -19,9 +19,15 @@ const router = express.Router();
 // Upload middleware stores file in memory, Controller uploads to GCS
 router.post('/', upload.single('image'), postController.create);
 router.get('/', postController.getAll);
+
+// CRITICAL: Define /search BEFORE /:id to prevent ID collision
+router.get('/search', postController.search);
+
+router.get('/:id', postController.getById);
+router.delete('/:id', postController.delete);
 router.post('/:id/like', postController.toggleLike);
 
-app.use('/api/posts', router);
+app.use('/', router);
 
 // Health Check
 app.get('/health', (req, res) => res.send('Post Service is OK'));

@@ -46,6 +46,7 @@ app.use('/socket.io', createProxyMiddleware({
 app.use(['/api/users/login', '/api/users/register'], createProxyMiddleware({
   target: USER_SERVICE_URL,
   changeOrigin: true,
+  pathRewrite: { '^/api/users': '' },
 }));
 
 // Protected Routes
@@ -66,7 +67,7 @@ for (const [path, target] of Object.entries(protectedRoutes)) {
         proxyReq.setHeader('x-user-id', req.headers['x-user-id']);
       }
     },
-    pathRewrite: { [`^${path}`]: path },
+    pathRewrite: { [`^${path}`]: '' },
   }));
 }
 
