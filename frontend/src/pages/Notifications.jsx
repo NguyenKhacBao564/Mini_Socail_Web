@@ -73,7 +73,7 @@ const Notifications = () => {
              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
            </div>
         ) : notifications.length === 0 ? (
-           <div className="text-center py-10 text-slate-500">No notifications yet.</div>
+           <div className="text-center py-10 text-slate-500">No notifications yet. May be Later.</div>
         ) : (
           notifications.map((n) => (
             <div key={n.id} className="flex items-center gap-4 p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors">
