@@ -15,7 +15,7 @@ const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http:/
 const FEED_SERVICE_URL = process.env.FEED_SERVICE_URL || 'http://feed-service:3004';
 
 // Configure CORS dynamically
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = ['http://localhost:5173', 'https://minisocailweb.vercel.app' ,'https://mini-socail-web.vercel.app'];
 const frontendUrl = process.env.FRONTEND_URL;
 
 if (frontendUrl) {
